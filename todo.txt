@@ -1,0 +1,25 @@
+Features:
+-analysis for each stint
+	-pace graph, average lap time, exclude laps above a threshold
+	-histogram of lap times
+	-same features for sector times
+	-number/percentage of invalid laps & otherwise excluded laps
+	-starting/ending fuel
+	-conditions
+	-other stint info?
+-overall race analysis
+	-position graph (also including other drivers
+-save analysis to a pdf file
+-configurable options via an ini file
+
+
+TODO:
+-stint analysis features
+-file formatting improvements
+-code architecture improvements
+-folder structure
+
+
+Details:
+-maybe lap numbers should be actual race laps (not stint laps)
+-what to do with non-normal letters in driver names (ä, ö, etc.)?
