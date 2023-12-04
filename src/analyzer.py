@@ -11,8 +11,9 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch, cm
 from utils import data_reader, to_seconds, to_liters, get_image, to_minutes_str
 
-filename = 'SGxVCOFinalsR2.csv'
-driver = 'Ville Synkkanen (SYN)'
+filename = "SGxVCOFinalsR2"
+driver = "Ville Synkkanen (SYN)"
+#driver = "Ville SynkkÃ¤nen (SYN)"
 data_dir = 'data'
 img_dir = 'images'
 out_dir = 'analysis'
@@ -22,7 +23,7 @@ fit_degree = 2
 plot_dpi = 300
 
 # Read CSV file
-r1, laps = data_reader(data_dir, filename)
+r1, laps = data_reader(data_dir, filename + ".csv")
 
 # Get column indexes for important data
 laptime_idx = r1.index('Lap Time')
@@ -114,6 +115,6 @@ for i in range(len(stints)):
     story.append(Paragraph("Starting fuel: " + str(fuel_stints[i])))
     story.append(Paragraph("Fuel left: " + str(fuel_stints_end[i])))
 
-doc = SimpleDocTemplate(out_dir + "/" + "Analysis.pdf")
+doc = SimpleDocTemplate(out_dir + "/" + filename + "_analysis.pdf")
 doc.build(story)
 

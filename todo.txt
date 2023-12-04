@@ -4,9 +4,12 @@ Features:
 	-histogram of lap times (done)
 	-starting/ending fuel (done)
 	-number of excluded laps (done)
-	-graphs for sector times
+	-lap time standard deviation
+	-same for sector times 
 	-total laps
+	-track, car
 	-conditions (track grip, rain, tyre used)
+		-also temps
 	-number/percentage of invalid laps (cannot be obtained from Variable data, only fixed format) [could get from fixed format data file]
 	-number of accidents
 	-other stint info?
