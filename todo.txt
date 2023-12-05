@@ -3,33 +3,29 @@ Features:
 	-pace graph, average lap time, exclude laps above a threshold (done)
 	-histogram of lap times (done)
 	-starting/ending fuel (done)
-	-number of excluded laps (done)
 	-lap time standard deviation
-	-same for sector times 
-	-total laps
-	-track, car
+	-same for sector times (done)
+	-excluded lap numbers (done)
+	-laps (done)
+	-stint length
+	-number of accidents
 	-conditions (track grip, rain, tyre used)
 		-also temps
-	-number/percentage of invalid laps (cannot be obtained from Variable data, only fixed format) [could get from fixed format data file]
-	-number of accidents
+	-number/percentage of invalid laps (cannot be obtained from Variable data, only fixed format) [could get from fixed format data file]	
 	-other stint info?
 -overall race analysis
+	-track, car
+	-total laps
 	-position graph (also including other drivers)
 -save analysis to a pdf file
 -configurable options via an ini file
 
-
 TODO:
 -stint analysis features
 -file formatting improvements
--code architecture improvements
 -folder structure
-
+-error handling
+-ini file for settings
 
 Details:
--what to do with non-normal letters in driver names (ä, ö, etc.)?
-	-possibility to replace this with dot (could be interpreted as any letter or multiple letters
-	-alternatively, just use the driver short ID instead (could be an option)
 -how to illustrate stint conditions (plot with grip and rain levels somehow)?
--one stint analysis per page
--sector time graphs in a 2x3 subplot
