@@ -4,7 +4,6 @@ import math
 from reportlab.lib import utils
 from reportlab.platypus import Image
 
-
 decimal_delim = ','
 
 
@@ -48,3 +47,36 @@ def get_image(path, width):
     iw, ih = img.getSize()
     aspect = ih / float(iw)
     return Image(path, width=width, height=(width * aspect))
+
+
+def condition_to_int(cond):
+    if cond == "Optimum":
+        return 6
+    elif cond == "Fast":
+        return 5
+    elif cond == "Green":
+        return 4
+    elif cond == "Greasy":
+        return 3
+    elif cond == "Damp":
+        return 2
+    elif cond == "Wet":
+        return 1
+    elif cond == "Flooded":
+        return 0
+    else:
+        return -1
+
+
+def rain_to_int(rain):
+    if rain == "Heavy Rain":
+        return 3
+    elif rain == "Medium Rain":
+        return 2
+    elif rain == "Light Rain":
+        return 1
+    elif rain == "No Rain":
+        return 0
+    else:
+        return -1
+

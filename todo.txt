@@ -1,31 +1,34 @@
 Features:
--analysis for each stint
-	-pace graph, average lap time, exclude laps above a threshold (done)
-	-histogram of lap times (done)
-	-starting/ending fuel (done)
-	-lap time standard deviation
-	-same for sector times (done)
-	-excluded lap numbers (done)
-	-laps (done)
-	-stint length
-	-number of accidents
-	-conditions (track grip, rain, tyre used)
-		-also temps
-	-number/percentage of invalid laps (cannot be obtained from Variable data, only fixed format) [could get from fixed format data file]	
-	-other stint info?
+-analysis for each stint (done)
+	-pace graph, average lap time, exclude laps above a threshold 
+	-histogram of lap times 
+	-starting/ending fuel
+	-lap time standard deviation 
+	-same for sector times 
+	-excluded lap numbers 
+	-laps
+	-conditions: track grip, rain, tyre used 
+	-temps: in conditions graph, air and road 
 -overall race analysis
-	-track, car
-	-total laps
 	-position graph (also including other drivers)
--save analysis to a pdf file
--configurable options via an ini file
+	-gap behind graph
+-save analysis to a pdf file (done)
+-configurable options via an ini file (delimiter, plot dpi, driver ID, data dir, image dir, output dir)
+-command line arguments (data file name, comparison lap count, outlier margin, fit degree)
 
 TODO:
--stint analysis features
--file formatting improvements
--folder structure
+-general info at the start: track, car, race number, total laps
+-race analysis features
+
+-file formatting improvements, plotting improvements, etc.
 -error handling
 -ini file for settings
+-command line arguments
+
 
 Details:
--how to illustrate stint conditions (plot with grip and rain levels somehow)?
+-outlier removal: remove first and last lap (unless it is the last lap of the race) [this is not working correctly]
+	-then, do comparison with averages of 3 previous laps
+-grip: flooded = 0, wet = 1, damp = 2, greasy = 3, green = 4, fast = 5, optimum = 6
+-rain: no rain = 0, light = 1, medium = 2, heavy = 3
+-outlier removal could be improved further
