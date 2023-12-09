@@ -26,6 +26,7 @@ laps_f = laps_f[1:]
 # Get column indexes for important data
 laptime_idx = r1.index('Lap Time')
 lap_idx = r1.index('Lap')
+driver_idx = r1.index("Driver")
 driver_id_idx = r1.index("Short Name")
 tyreset_idx = r1.index('Tyre Set')
 fuel_idx = r1.index('Fuel')
@@ -72,7 +73,12 @@ fuel_stints_end = []
 fuel = math.inf
 tyre_set = None
 race_laps = len(laps)
+track = laps[0][0]
+car = laps[0][1]
+drivers = []
 for i in range(race_laps):
+    if laps[i][driver_idx] not in drivers:
+        drivers.append(laps[i][driver_idx])
     if laps[i][driver_id_idx].lower() == driver_id.lower():
         if tyre_set is None:
             tyre_set = int(laps[i][tyreset_idx])
@@ -244,18 +250,31 @@ for i in range(len(stints)):
 
 # Create PDF
 story = []
+story.append(Paragraph(filename + " Analysis"))
+story.append(Paragraph("Car: " + car))
+story.append(Paragraph("Track: " + track))
+story.append(Paragraph("Race laps: " + str(race_laps)))
+drivers_p = ""
+if len(drivers) > 1:
+    drivers_p += "Drivers: "
+else:
+    drivers_p += "Driver: "
+for dr in drivers:
+    drivers_p += dr + ", "
+story.append(Paragraph(drivers_p))
 for i in range(len(stints)):
+
     story.append(Paragraph("Stint" + str(i + 1)))
 
-    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + ".png", width=16*cm)
+    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + ".png", width=15*cm)
     im.hAlign = 'CENTER'
     story.append(im)
 
-    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "sectors.png", width=16 * cm)
+    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "sectors.png", width=15 * cm)
     im.hAlign = 'CENTER'
     story.append(im)
 
-    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=8 * cm)
+    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=7 * cm)
     im.hAlign = 'LEFT'
 
 

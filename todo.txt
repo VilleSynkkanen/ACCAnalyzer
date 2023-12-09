@@ -17,18 +17,20 @@ Features:
 -command line arguments (data file name, comparison lap count, outlier margin, fit degree)
 
 TODO:
--general info at the start: track, car, race number, total laps
 -race analysis features
-
 -file formatting improvements, plotting improvements, etc.
 -error handling
 -ini file for settings
 -command line arguments
-
+-instructions for using the application
+-github readme
 
 Details:
 -outlier removal: remove first and last lap (unless it is the last lap of the race) [this is not working correctly]
 	-then, do comparison with averages of 3 previous laps
+	-outlier removal could be improved further
 -grip: flooded = 0, wet = 1, damp = 2, greasy = 3, green = 4, fast = 5, optimum = 6
 -rain: no rain = 0, light = 1, medium = 2, heavy = 3
--outlier removal could be improved further
+
+Try:
+-publish release on github (when ready)
