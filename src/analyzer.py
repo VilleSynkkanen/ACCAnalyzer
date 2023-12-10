@@ -3,11 +3,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak, Table
 from reportlab.lib.units import cm
-from utils import data_reader, to_seconds, to_liters, get_image, to_minutes_str, condition_to_int, rain_to_int
+from utils import data_reader, to_seconds, to_liters, get_image, to_minutes_str, condition_to_int, rain_to_int, \
+    gap_to_float, get_track_map
 
 filename = "SGxVCOFinalsR2"
+analysis_title = "SimgridxVCO Grand Finals Round 2"
 driver_id = "SYN"
 data_dir = 'data'
+track_dir = 'tracks'
+car_dir = 'cars'
 img_dir = 'images'
 out_dir = 'analysis'
 
@@ -36,6 +40,8 @@ rain_idx = r1.index('Rain Intensity')
 tyres_idx = r1.index('Tyres')
 air_temp_idx = r1.index('Â° Air')
 road_temp_idx = r1.index('Â° Road')
+position_idx = r1.index('Position')
+gap_idx = r1.index('Gap')
 
 invalid_idx = r1_f.index('Penalty')
 
@@ -76,38 +82,46 @@ race_laps = len(laps)
 track = laps[0][0]
 car = laps[0][1]
 drivers = []
+position = []
+gap_behind = []
+laps_all_drivers = []
 for i in range(race_laps):
+    position.append(int(laps[i][position_idx]))
+    gap_behind.append(gap_to_float(laps[i][gap_idx]))
+    laps_all_drivers.append((laps[i][driver_idx], int(laps[i][lap_idx])))
     if laps[i][driver_idx] not in drivers:
         drivers.append(laps[i][driver_idx])
     if laps[i][driver_id_idx].lower() == driver_id.lower():
         if tyre_set is None:
             tyre_set = int(laps[i][tyreset_idx])
         elif tyre_set != int(laps[i][tyreset_idx]) or to_liters(laps[i][fuel_idx]) > fuel:
-            stints.append(times)
-            stints_s1.append(times_s1)
-            stints_s2.append(times_s2)
-            stints_s3.append(times_s3)
+            if len(times) > 1:
+                stints.append(times)
+                stints_s1.append(times_s1)
+                stints_s2.append(times_s2)
+                stints_s3.append(times_s3)
 
-            fuel_stints.append(to_liters(laps[times[0][1]-1][fuel_idx]))
-            fuel_stints_end.append(to_liters(laps[times[len(times) - 1][1]-1][fuel_idx]))
+                fuel_stints.append(to_liters(laps[times[0][1]-1][fuel_idx]))
+                fuel_stints_end.append(to_liters(laps[times[len(times) - 1][1]-1][fuel_idx]))
+                invalid_stints.append(invalid_laps)
+
+                accidents.append(accidents_cur)
+                conditions.append(conditions_stint)
+                rain.append(rain_stint)
+                tyres.append(tyres_stint)
+                air_temp.append(air_temp_stint)
+                road_temp.append(road_temp_stint)
+
+            accidents_cur = 0
             times = []
             times_s1 = []
             times_s2 = []
             times_s3 = []
-
-            invalid_stints.append(invalid_laps)
             invalid_laps = []
-            accidents.append(accidents_cur)
-            accidents_cur = 0
-            conditions.append(conditions_stint)
             conditions_stint = []
-            rain.append(rain_stint)
             rain_stint = []
-            tyres.append(tyres_stint)
             tyres_stint = []
-            air_temp.append(air_temp_stint)
             air_temp_stint = []
-            road_temp.append(road_temp_stint)
             road_temp_stint = []
 
         times.append((to_seconds(laps[i][laptime_idx]), int(laps[i][lap_idx])))
@@ -125,6 +139,27 @@ for i in range(race_laps):
         tyres_stint.append(laps[i][tyres_idx])
         air_temp_stint.append(laps[i][air_temp_idx])
         road_temp_stint.append(laps[i][road_temp_idx])
+
+
+stints_all_drivers = []
+curr_driver = laps_all_drivers[0][0]
+curr_stint = []
+for lp in laps_all_drivers:
+    if lp[0] == curr_driver:
+        curr_stint.append(lp)
+    else:
+        stints_all_drivers.append(curr_stint)
+        curr_stint = []
+        curr_driver = lp[0]
+        curr_stint.append(lp)
+
+stints_all_drivers.append(curr_stint)
+
+stint_start_end_all = []
+for st in stints_all_drivers:
+    stint_start_end_all.append((st[0][0], st[0][1], st[-1][1]))
+
+stint_start_end_all = sorted(stint_start_end_all,key=lambda x: x[0])
 
 stints.append(times)
 stints_s1.append(times_s1)
@@ -156,6 +191,7 @@ stds_s3 = []
 excl_laps = []
 total_laps = []
 invalid_laps = []
+stint_start_end = []
 # Remove outlier laps
 for i in range(len(stints)):
     stint = []
@@ -167,6 +203,7 @@ for i in range(len(stints)):
     exc = []
     comparison_laps = [min(stints[i])[0]]
     total_laps.append(len(stints[i]))
+    stint_start_end.append((stints[i][0], stints[i][-1]))
     for j in range(len(stints[i])):
         lap_nums_all.append(stints[i][j][1])
         if not (j == 0 or (j == len(stints[i]) - 1 and j != race_laps - 1)) \
@@ -189,7 +226,6 @@ for i in range(len(stints)):
     stint_s3 = np.array(stint_s3)
     lap_nums = np.array(lap_nums)
     lap_nums_all = np.array(lap_nums_all)
-
 
     avgs.append(np.average(stint))
     stds.append(np.std(stint))
@@ -248,9 +284,18 @@ for i in range(len(stints)):
 
     stint_idx += 1
 
+# Race analysis
+f, (ax1, ax2) = plt.subplots(1, 2)
+f.set_figwidth(10)
+ax1.plot(position)
+ax2.plot(gap_behind)
+
+plt.savefig(img_dir + "/" + filename + "position.png", format="png", bbox_inches="tight",
+                dpi=plot_dpi)
+
 # Create PDF
 story = []
-story.append(Paragraph(filename + " Analysis"))
+story.append(Paragraph(analysis_title + " Analysis"))
 story.append(Paragraph("Car: " + car))
 story.append(Paragraph("Track: " + track))
 story.append(Paragraph("Race laps: " + str(race_laps)))
@@ -262,23 +307,50 @@ else:
 for dr in drivers:
     drivers_p += dr + ", "
 story.append(Paragraph(drivers_p))
+
+im1 = get_track_map(track_dir, track, 8*cm)
+im2 = get_image(car_dir + "/" + car + ".png", 8*cm)
+data = [[im1, im2]]
+t = Table(data)
+story.append(t)
+
+im = get_image(img_dir + "/" + filename + "position.png", width=16*cm)
+im.hAlign = 'CENTER'
+story.append(im)
+
+drivers_table_p = [' ']
+laps_table_p = ['Laps']
+for dr in drivers:
+    drivers_table_p.append(Paragraph(dr))
+    laps_table_p_add = ""
+    for st in stint_start_end_all:
+        if dr == st[0]:
+            laps_table_p_add += str(st[1]) + " - " + str(st[2]) + ", "
+    laps_table_p_add = laps_table_p_add[0:len(laps_table_p_add)-2]
+    laps_table_p.append(Paragraph(laps_table_p_add))
+data = [drivers_table_p, laps_table_p]
+t = Table(data)
+story.append(t)
+story.append(PageBreak())
+
 for i in range(len(stints)):
 
     story.append(Paragraph("Stint" + str(i + 1)))
 
-    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + ".png", width=15*cm)
+    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + ".png", width=16*cm)
     im.hAlign = 'CENTER'
     story.append(im)
 
-    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "sectors.png", width=15 * cm)
+    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "sectors.png", width=16 * cm)
     im.hAlign = 'CENTER'
     story.append(im)
 
-    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=7 * cm)
+    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=8 * cm)
     im.hAlign = 'LEFT'
 
 
     p = ""
+    p += "Laps: " + str(stint_start_end[i][0][1]) + " - " + str(stint_start_end[i][1][1]) + "\n"
     p += "Average laptime: " + to_minutes_str(avgs[i]) + "\n"
     p += "Laptime standard deviation: " + to_minutes_str(stds[i]) + "\n"
 
@@ -301,9 +373,7 @@ for i in range(len(stints)):
     data = [[im, p]]
     t = Table(data)
     story.append(t)
-
     story.append(PageBreak())
 
 doc = SimpleDocTemplate(out_dir + "/" + filename + "_analysis.pdf")
 doc.build(story)
-

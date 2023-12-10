@@ -80,3 +80,13 @@ def rain_to_int(rain):
     else:
         return -1
 
+
+def gap_to_float(gap):
+    gap = gap[1:]
+    gap = gap.replace(decimal_delim, ".")
+    return float(gap)
+
+
+def get_track_map(track_dir, track, width):
+    name = track.split("(")[0].strip(" ")
+    return get_image(track_dir + "/" + name + ".png", width)

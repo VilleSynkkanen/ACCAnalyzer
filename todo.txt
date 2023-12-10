@@ -9,17 +9,23 @@ Features:
 	-laps
 	-conditions: track grip, rain, tyre used 
 	-temps: in conditions graph, air and road 
--overall race analysis
+-overall race analysis (done)
 	-position graph (also including other drivers)
 	-gap behind graph
+	-laps for each driver
 -save analysis to a pdf file (done)
 -configurable options via an ini file (delimiter, plot dpi, driver ID, data dir, image dir, output dir)
 -command line arguments (data file name, comparison lap count, outlier margin, fit degree)
 
 TODO:
--race analysis features
--file formatting improvements, plotting improvements, etc.
+-improvements
+	-plots
+	-page formatting
+	-outlier removal improvement (average of following and previous laps)
+	-better track maps
+	-etc.
 -error handling
+	-dealing with broken data, etc.
 -ini file for settings
 -command line arguments
 -instructions for using the application
