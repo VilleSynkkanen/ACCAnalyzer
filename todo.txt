@@ -19,15 +19,22 @@ Features:
 
 TODO:
 -improvements
-	-plots
-	-page formatting
+	-temperature plotting is not working correctly
+	-limit number of ticks in plots
+	-page formatting (stint info into a table)
 	-outlier removal improvement (average of following and previous laps)
-	-better track maps
-	-etc.
+	-deal with special letters
+		-maybe have driver recognition with (also) name if it can be reasonably implemented
 -error handling
 	-dealing with broken data, etc.
+	-should work even with broken sector data
+	-fail analysis and show error message when something else goes wrong
 -ini file for settings
 -command line arguments
+-first build with pyinstaller
+
+FINALLY:
+-code refactoring if necessary
 -instructions for using the application
 -github readme
 
@@ -35,8 +42,7 @@ Details:
 -outlier removal: remove first and last lap (unless it is the last lap of the race) [this is not working correctly]
 	-then, do comparison with averages of 3 previous laps
 	-outlier removal could be improved further
--grip: flooded = 0, wet = 1, damp = 2, greasy = 3, green = 4, fast = 5, optimum = 6
--rain: no rain = 0, light = 1, medium = 2, heavy = 3
+-how to deal with special letters (ä, ö, etc.)?
 
 Try:
 -publish release on github (when ready)

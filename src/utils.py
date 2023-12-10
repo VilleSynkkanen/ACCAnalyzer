@@ -68,6 +68,25 @@ def condition_to_int(cond):
         return -1
 
 
+def int_to_condition(cond):
+    if cond == 6:
+        return "Optimum"
+    elif cond == 5:
+        return "Fast"
+    elif cond == 5:
+        return "Green"
+    elif cond == 3:
+        return "Greasy"
+    elif cond == 2:
+        return "Damp"
+    elif cond == 1:
+        return "Wet"
+    elif cond == 0:
+        return "Flooded"
+    else:
+        return ""
+
+
 def rain_to_int(rain):
     if rain == "Heavy Rain":
         return 3
@@ -81,6 +100,19 @@ def rain_to_int(rain):
         return -1
 
 
+def int_to_rain(rain):
+    if rain == 3:
+        return "Heavy Rain"
+    elif rain == 2:
+        return "Medium Rain"
+    elif rain == 1:
+        return "Light Rain"
+    elif rain == 0:
+        return "No Rain"
+    else:
+        return ""
+
+
 def gap_to_float(gap):
     gap = gap[1:]
     gap = gap.replace(decimal_delim, ".")
@@ -90,3 +122,25 @@ def gap_to_float(gap):
 def get_track_map(track_dir, track, width):
     name = track.split("(")[0].strip(" ")
     return get_image(track_dir + "/" + name + ".png", width)
+
+
+def secs_to_mins(secs):
+    mins = []
+    for sec in secs:
+        mins.append(to_minutes_str(sec))
+    return mins
+
+
+def condition_ticks(ticks):
+    new_ticks = []
+    for t in ticks:
+        new_ticks.append(int_to_condition(t))
+    return new_ticks
+
+
+def rain_ticks(ticks):
+    new_ticks = []
+    for t in ticks:
+        new_ticks.append(int_to_rain(t))
+    return new_ticks
+

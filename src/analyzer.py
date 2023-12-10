@@ -1,13 +1,17 @@
 import math
 import matplotlib.pyplot as plt
 import numpy as np
-from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak, Table
+from matplotlib import ticker
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak, Table, Spacer, TableStyle
 from reportlab.lib.units import cm
 from utils import data_reader, to_seconds, to_liters, get_image, to_minutes_str, condition_to_int, rain_to_int, \
-    gap_to_float, get_track_map
+    gap_to_float, get_track_map, secs_to_mins, condition_ticks, rain_ticks
 
-filename = "SGxVCOFinalsR2"
-analysis_title = "SimgridxVCO Grand Finals Round 2"
+filename = "PLRImola6h"
+analysis_title = "PLR Imola 6h"
 driver_id = "SYN"
 data_dir = 'data'
 track_dir = 'tracks'
@@ -83,11 +87,11 @@ track = laps[0][0]
 car = laps[0][1]
 drivers = []
 position = []
-gap_behind = []
+gap_ahead = []
 laps_all_drivers = []
 for i in range(race_laps):
     position.append(int(laps[i][position_idx]))
-    gap_behind.append(gap_to_float(laps[i][gap_idx]))
+    gap_ahead.append(gap_to_float(laps[i][gap_idx]))
     laps_all_drivers.append((laps[i][driver_idx], int(laps[i][lap_idx])))
     if laps[i][driver_idx] not in drivers:
         drivers.append(laps[i][driver_idx])
@@ -237,6 +241,7 @@ for i in range(len(stints)):
     avgs_s3.append(np.average(stint_s3))
     stds_s3.append(np.std(stint_s3))
     excl_laps.append(exc)
+
     # Fit data into a curve and plot it
     # Plot a histogram into the same subplot
     f, (ax1, ax2) = plt.subplots(1, 2)
@@ -246,14 +251,20 @@ for i in range(len(stints)):
     ax1.plot(lap_nums, stint, 'o')
     ax1.plot(lap_nums, p(lap_nums))
     ax2.stairs(counts, bins, fill=True)
-
-    #plt.title("Stint " + str(stint_idx))
-    #plt.xlabel("Lap")
-    #plt.ylabel("Lap time")
+    f.suptitle('Lap times')
+    ax1.set_xlabel('lap')
+    ax1.set_yticks(ax1.get_yticks())
+    ax1.set_yticklabels(secs_to_mins(ax1.get_yticks()))
+    ax1.set_ylabel('time')
+    ax2.set_xlabel('time')
+    ax2.set_xticks(ax2.get_xticks())
+    ax2.set_xticklabels(secs_to_mins(ax2.get_xticks()))
+    ax2.set_ylabel('number of laps')
+    ax2.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
 
     # Save and clear plot
-    plt.savefig(img_dir + "/" + filename + "_stint" + str(stint_idx) + ".png", format="png", bbox_inches="tight", dpi=plot_dpi)
-    #plt.show()
+    plt.savefig(img_dir + "/" + filename + "_stint" + str(stint_idx) + ".png", format="png",
+                bbox_inches="tight", dpi=plot_dpi)
     plt.clf()
 
     # Sector time plotting
@@ -267,20 +278,41 @@ for i in range(len(stints)):
         axes[s].plot(lap_nums, sectors[s], 'o')
         axes[s].plot(lap_nums, p(lap_nums))
         axes[s+3].stairs(counts, bins, fill=True)
+        axes[s].set_title('Sector ' + str(s + 1) + ' times')
+        axes[s].set_xlabel('lap')
+        axes[s].set_yticks(axes[s].get_yticks())
+        axes[s].set_yticklabels(secs_to_mins(axes[s].get_yticks()))
+        axes[s].set_ylabel('time')
+        axes[s+3].set_xlabel('time')
+        axes[s+3].set_xticks(axes[s+3].get_xticks())
+        axes[s+3].set_xticklabels(secs_to_mins(axes[s+3].get_xticks()))
+        axes[s+3].set_ylabel('number of sectors')
+        axes[s+3].yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+        plt.tight_layout()
 
-    plt.savefig(img_dir + "/" + filename + "_stint" + str(stint_idx) + "sectors.png", format="png", bbox_inches="tight", dpi=plot_dpi)
-    #plt.show()
+    plt.savefig(img_dir + "/" + filename + "_stint" + str(stint_idx) + "sectors.png", format="png",
+                bbox_inches="tight", dpi=plot_dpi)
 
     # Conditions plotting
     f, (ax1, ax2, ax3) = plt.subplots(3, 1)
     f.set_figwidth(5)
     ax1.plot(lap_nums_all, conditions[i])
+    ax1.set_title("Track grip")
+    ax1.set_yticks(ax1.get_yticks())
+    ax1.set_yticklabels(condition_ticks(ax1.get_yticks()))
     ax2.plot(lap_nums_all, rain[i])
+    ax2.set_title("Rain level")
+    ax2.set_yticks(ax2.get_yticks())
+    ax2.set_yticklabels(rain_ticks(ax2.get_yticks()))
     ax3.plot(lap_nums_all, air_temp[i])
     ax3.plot(lap_nums_all, road_temp[i], '-')
+    ax3.set_title("Temperatures")
+    ax3.legend(['ambient', 'road'])
+    ax3.yaxis.set_major_locator(plt.MaxNLocator(4))
+    plt.tight_layout()
 
-    plt.savefig(img_dir + "/" + filename + "_stint" + str(stint_idx) + "conditions.png", format="png", bbox_inches="tight",
-                dpi=plot_dpi)
+    plt.savefig(img_dir + "/" + filename + "_stint" + str(stint_idx) + "conditions.png", format="png",
+                bbox_inches="tight", dpi=plot_dpi)
 
     stint_idx += 1
 
@@ -288,17 +320,62 @@ for i in range(len(stints)):
 f, (ax1, ax2) = plt.subplots(1, 2)
 f.set_figwidth(10)
 ax1.plot(position)
-ax2.plot(gap_behind)
+ax1.set_title('Race position')
+ax1.set_xlabel('lap')
+ax1.set_ylabel('position')
+ax2.plot(gap_ahead)
+ax2.set_title('Gap to car ahead')
+ax2.set_xlabel('lap')
+ax2.set_ylabel('time (s)')
 
 plt.savefig(img_dir + "/" + filename + "position.png", format="png", bbox_inches="tight",
                 dpi=plot_dpi)
 
+# Create styles
+styles = getSampleStyleSheet()
+styles.add(ParagraphStyle(name='Heading_CENTER',
+                          parent=styles['Heading1'],
+                          fontName='Helvetica',
+                          wordWrap='LTR',
+                          alignment=TA_CENTER,
+                          fontSize=16,
+                          leading=13,
+                          textColor=colors.black,
+                          borderPadding=0,
+                          leftIndent=0,
+                          rightIndent=0,
+                          spaceAfter=0,
+                          spaceBefore=0,
+                          splitLongWords=True,
+                          spaceShrinkage=0.05,
+                          ))
+
+styles.add(ParagraphStyle(name='Heading2_LEFT',
+                          parent=styles['Heading2'],
+                          fontName='Helvetica',
+                          wordWrap='LTR',
+                          alignment=TA_LEFT,
+                          fontSize=13,
+                          leading=13,
+                          textColor=colors.black,
+                          borderPadding=0,
+                          leftIndent=0,
+                          rightIndent=0,
+                          spaceAfter=0,
+                          spaceBefore=0,
+                          splitLongWords=True,
+                          spaceShrinkage=0.05,
+                          ))
+
+styleHC = styles['Heading_CENTER']
+styleHL2 = styles['Heading2_LEFT']
+
 # Create PDF
-story = []
-story.append(Paragraph(analysis_title + " Analysis"))
-story.append(Paragraph("Car: " + car))
-story.append(Paragraph("Track: " + track))
-story.append(Paragraph("Race laps: " + str(race_laps)))
+story = list()
+story.append(Paragraph(analysis_title + " Analysis", styleHC))
+story.append(Spacer(1, 24))
+story.append(Paragraph("General Information", styleHL2))
+story.append(Spacer(1, 6))
 drivers_p = ""
 if len(drivers) > 1:
     drivers_p += "Drivers: "
@@ -306,20 +383,28 @@ else:
     drivers_p += "Driver: "
 for dr in drivers:
     drivers_p += dr + ", "
+drivers_p = drivers_p[:len(drivers_p)-2]
 story.append(Paragraph(drivers_p))
+story.append(Paragraph("Car: " + car))
+story.append(Paragraph("Track: " + track))
 
-im1 = get_track_map(track_dir, track, 8*cm)
-im2 = get_image(car_dir + "/" + car + ".png", 8*cm)
-data = [[im1, im2]]
+im1 = get_track_map(track_dir, track, 7.5*cm)
+im2 = get_image(car_dir + "/" + car + ".png", 7.5*cm)
+data = [[im2, im1]]
 t = Table(data)
+t.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP')]))
+t.hAlign = 'CENTER'
 story.append(t)
+story.append(Spacer(1, 12))
 
-im = get_image(img_dir + "/" + filename + "position.png", width=16*cm)
+story.append(Paragraph("Race Analysis", styleHL2))
+story.append(Spacer(1, 6))
+im = get_image(img_dir + "/" + filename + "position.png", width=15*cm)
 im.hAlign = 'CENTER'
 story.append(im)
-
-drivers_table_p = [' ']
-laps_table_p = ['Laps']
+story.append(Spacer(1, 6))
+drivers_table_p = ['Driver']
+laps_table_p = ['Laps driven']
 for dr in drivers:
     drivers_table_p.append(Paragraph(dr))
     laps_table_p_add = ""
@@ -330,12 +415,16 @@ for dr in drivers:
     laps_table_p.append(Paragraph(laps_table_p_add))
 data = [drivers_table_p, laps_table_p]
 t = Table(data)
+
+t.setStyle(TableStyle([('GRID', (0, 0), (-1, -1), 0.25, colors.black),
+                       ('VALIGN', (0, 0), (-1, -1), 'TOP')]))
 story.append(t)
 story.append(PageBreak())
 
 for i in range(len(stints)):
 
-    story.append(Paragraph("Stint" + str(i + 1)))
+    story.append(Paragraph("Stint " + str(i + 1) + " Analysis", styleHL2))
+    story.append(Spacer(1, 6))
 
     im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + ".png", width=16*cm)
     im.hAlign = 'CENTER'
@@ -345,7 +434,7 @@ for i in range(len(stints)):
     im.hAlign = 'CENTER'
     story.append(im)
 
-    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=8 * cm)
+    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=7 * cm)
     im.hAlign = 'LEFT'
 
 
