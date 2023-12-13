@@ -19,9 +19,6 @@ Features:
 
 TODO:
 -improvements
-	-temperature plotting is not working correctly
-	-limit number of ticks in plots
-	-page formatting (stint info into a table)
 	-outlier removal improvement (average of following and previous laps)
 	-deal with special letters
 		-maybe have driver recognition with (also) name if it can be reasonably implemented

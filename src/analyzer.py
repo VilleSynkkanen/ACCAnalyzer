@@ -8,7 +8,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak, Table, Spacer, TableStyle
 from reportlab.lib.units import cm
 from utils import data_reader, to_seconds, to_liters, get_image, to_minutes_str, condition_to_int, rain_to_int, \
-    gap_to_float, get_track_map, secs_to_mins, condition_ticks, rain_ticks
+    gap_to_float, get_track_map, secs_to_mins, condition_ticks, rain_ticks, temps_to_float
 
 filename = "PLRImola6h"
 analysis_title = "PLR Imola 6h"
@@ -258,9 +258,13 @@ for i in range(len(stints)):
     ax1.set_ylabel('time')
     ax2.set_xlabel('time')
     ax2.set_xticks(ax2.get_xticks())
-    ax2.set_xticklabels(secs_to_mins(ax2.get_xticks()))
+    if len(ax2.get_xticks()) > 8:
+        ax2.set_xticklabels(secs_to_mins(ax2.get_xticks()), fontsize=72/len(ax2.get_xticks()))
+    else:
+        ax2.set_xticklabels(secs_to_mins(ax2.get_xticks()))
     ax2.set_ylabel('number of laps')
     ax2.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+
 
     # Save and clear plot
     plt.savefig(img_dir + "/" + filename + "_stint" + str(stint_idx) + ".png", format="png",
@@ -304,9 +308,12 @@ for i in range(len(stints)):
     ax2.set_title("Rain level")
     ax2.set_yticks(ax2.get_yticks())
     ax2.set_yticklabels(rain_ticks(ax2.get_yticks()))
-    ax3.plot(lap_nums_all, air_temp[i])
-    ax3.plot(lap_nums_all, road_temp[i], '-')
+
+    ax3.plot(lap_nums_all, temps_to_float(air_temp[i]))
+    ax3.plot(lap_nums_all, temps_to_float(road_temp[i]), '-')
     ax3.set_title("Temperatures")
+    ax3.set_ylabel("°C")
+    ax3.set_xlabel('lap')
     ax3.legend(['ambient', 'road'])
     ax3.yaxis.set_major_locator(plt.MaxNLocator(4))
     plt.tight_layout()
@@ -383,7 +390,7 @@ else:
     drivers_p += "Driver: "
 for dr in drivers:
     drivers_p += dr + ", "
-drivers_p = drivers_p[:len(drivers_p)-2]
+drivers_p = drivers_p[:-2]
 story.append(Paragraph(drivers_p))
 story.append(Paragraph("Car: " + car))
 story.append(Paragraph("Track: " + track))
@@ -411,7 +418,7 @@ for dr in drivers:
     for st in stint_start_end_all:
         if dr == st[0]:
             laps_table_p_add += str(st[1]) + " - " + str(st[2]) + ", "
-    laps_table_p_add = laps_table_p_add[0:len(laps_table_p_add)-2]
+    laps_table_p_add = laps_table_p_add[:-2]
     laps_table_p.append(Paragraph(laps_table_p_add))
 data = [drivers_table_p, laps_table_p]
 t = Table(data)
@@ -434,33 +441,56 @@ for i in range(len(stints)):
     im.hAlign = 'CENTER'
     story.append(im)
 
-    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=7 * cm)
+    im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=7.2 * cm)
     im.hAlign = 'LEFT'
 
-
-    p = ""
-    p += "Laps: " + str(stint_start_end[i][0][1]) + " - " + str(stint_start_end[i][1][1]) + "\n"
-    p += "Average laptime: " + to_minutes_str(avgs[i]) + "\n"
-    p += "Laptime standard deviation: " + to_minutes_str(stds[i]) + "\n"
-
-    p += "Average sector times: " + to_minutes_str(avgs_s1[i]) + " " + to_minutes_str(avgs_s2[i]) + " " \
-         + to_minutes_str(avgs_s3[i]) + "\n"
-    p += "Sector times standard deviation: " + to_minutes_str(stds_s1[i]) + " " \
-         + to_minutes_str(stds_s2[i]) + " " + to_minutes_str(stds_s3[i])  + "\n"
-    p += "Total laps: " + str(total_laps[i]) + "\n"
-    p += "Invalid laps: " + str(len(invalid_stints[i])) + " (" + \
-         str(((len(invalid_stints[i])/total_laps[i])*100).__round__(1)) + "%)" + "\n"
-    excluded_str = "Excluded laps: "
+    lps = Paragraph(str(stint_start_end[i][0][1]) + " - " + str(stint_start_end[i][1][1]))
+    avgl = Paragraph(to_minutes_str(avgs[i]))
+    stdl = Paragraph(to_minutes_str(stds[i]))
+    avg_s1 = Paragraph(to_minutes_str(avgs_s1[i], round_to=2))
+    avg_s2 = Paragraph(to_minutes_str(avgs_s2[i], round_to=2))
+    avg_s3 = Paragraph(to_minutes_str(avgs_s3[i], round_to=2))
+    std_s1 = Paragraph(to_minutes_str(stds_s1[i], round_to=2))
+    std_s2 = Paragraph(to_minutes_str(stds_s2[i], round_to=2))
+    std_s3 = Paragraph(to_minutes_str(stds_s3[i], round_to=2))
+    excluded_str = ""
     for ex in excl_laps[i]:
-        excluded_str += str(ex) + " "
-    p += excluded_str + "\n"
-    p += "Incidents: " + str(accidents[i]) + "\n"
-    p += "Starting fuel: " + str(fuel_stints[i]) + "\n"
-    p += "Fuel left: " + str(fuel_stints_end[i]) + "\n"
-    p += "Tyres used: " + tyres[i][0] + "\n"
+        excluded_str += str(ex) + ", "
+    excluded_str = Paragraph(excluded_str[:-2])
+    inv = Paragraph(str(len(invalid_stints[i])) + " (" + str(((len(invalid_stints[i])/total_laps[i])*100).__round__(1)) + "%)")
+    inc = Paragraph(str(accidents[i]))
+    strf = Paragraph(str(fuel_stints[i]))
+    endf = Paragraph(str(fuel_stints_end[i]))
+    tyr = Paragraph(tyres[i][0])
+    data = [[im, 'Laps', lps, '', ''],
+            ['', 'Average laptime', avgl, '', ''],
+            ['', 'Standard deviation', stdl, '', ''],
+            ['', 'Average sectors', avg_s1, avg_s2, avg_s3],
+            ['', 'Standard deviation', std_s1, std_s2, std_s3],
+            ['', 'Excluded laps', excluded_str, '', ''],
+            ['', 'Invalid laps', inv, '', ''],
+            ['', 'Incidents', inc, '', ''],
+            ['', 'Starting fuel', strf, '', ''],
+            ['', 'Fuel left', endf, '', ''],
+            ['', 'Tyres used', tyr, '', '']]
 
-    data = [[im, p]]
+    style = [
+        ('GRID', (1, 0), (-1, -1), 0.25, colors.black),
+        ('SPAN', (0, 0), (0, 10)),
+        ('SPAN', (2, 0), (4, 0)),
+        ('SPAN', (2, 1), (4, 1)),
+        ('SPAN', (2, 2), (4, 2)),
+        ('SPAN', (2, 5), (4, 5)),
+        ('SPAN', (2, 6), (4, 6)),
+        ('SPAN', (2, 7), (4, 7)),
+        ('SPAN', (2, 8), (4, 8)),
+        ('SPAN', (2, 9), (4, 9)),
+        ('SPAN', (2, 10), (4, 10)),
+        ('VALIGN', (0, 0), (0, 10), 'TOP')
+    ]
+
     t = Table(data)
+    t.setStyle(style)
     story.append(t)
     story.append(PageBreak())
 

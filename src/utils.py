@@ -16,9 +16,9 @@ def to_seconds(time):
     return mins*60+float(secs[0])+float(secs[1])/1000
 
 
-def to_minutes_str(time):
+def to_minutes_str(time, round_to=3):
     mins = int(time // 60)
-    secs = (time % 60).__round__(3)
+    secs = (time % 60).__round__(round_to)
     if mins == 0:
         return str(secs)
     return str(mins) + ":" + str(secs)
@@ -143,4 +143,12 @@ def rain_ticks(ticks):
     for t in ticks:
         new_ticks.append(int_to_rain(t))
     return new_ticks
+
+
+def temps_to_float(temps):
+    new_temps = []
+    for t in temps:
+        new_temps.append(float(t.split("°")[0][:-1].replace(decimal_delim, ".")))
+    return new_temps
+
 
