@@ -17,29 +17,29 @@ Features:
 -configurable options via an ini file (delimiter, plot dpi, driver ID, data dir, image dir, output dir)
 -command line arguments (data file name, comparison lap count, outlier margin, fit degree)
 
+Notes:
+-outlier margin: Keep between 0.005 and 0.05 (default value = 0.025). More variable conditions may require a larger value
+-fit degree should be 2 most of the time, maybe sometimes 3 or even 4
+
 TODO:
 -improvements
-	-outlier removal improvement (average of following and previous laps)
 	-deal with special letters
 		-maybe have driver recognition with (also) name if it can be reasonably implemented
 -error handling
 	-dealing with broken data, etc.
 	-should work even with broken sector data
+		-if one sector is missing, calculate times from the other sectors and the full lap
+		-otherwise fail the analysis
 	-fail analysis and show error message when something else goes wrong
--ini file for settings
--command line arguments
 -first build with pyinstaller
 
 FINALLY:
--code refactoring if necessary
 -instructions for using the application
 -github readme
 
 Details:
--outlier removal: remove first and last lap (unless it is the last lap of the race) [this is not working correctly]
-	-then, do comparison with averages of 3 previous laps
-	-outlier removal could be improved further
 -how to deal with special letters (ä, ö, etc.)?
+-Write "PS. Ben Crook sucks" at the end of the instructions
 
 Try:
 -publish release on github (when ready)

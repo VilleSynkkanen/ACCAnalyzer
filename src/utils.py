@@ -1,10 +1,12 @@
 import csv
 import math
+import locale
 
 from reportlab.lib import utils
 from reportlab.platypus import Image
 
-decimal_delim = ','
+locale.setlocale(locale.LC_ALL, '')
+decimal_delim = locale.localeconv()['mon_decimal_point']
 
 
 def to_seconds(time):
@@ -32,7 +34,7 @@ def to_liters(fuel):
 def data_reader(data_dir, filename):
     r1 = None
     laps = []
-    with open(data_dir + '/' + filename, newline='') as csvfile:
+    with open(data_dir + '/' + filename, newline='', encoding="utf-8") as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
             if r1 is None:

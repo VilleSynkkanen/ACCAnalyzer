@@ -1,6 +1,7 @@
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+from configparser import ConfigParser
 from matplotlib import ticker
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
@@ -10,19 +11,56 @@ from reportlab.lib.units import cm
 from utils import data_reader, to_seconds, to_liters, get_image, to_minutes_str, condition_to_int, rain_to_int, \
     gap_to_float, get_track_map, secs_to_mins, condition_ticks, rain_ticks, temps_to_float
 
+"""
+filename = input("Data file name (without .csv): ")
+analysis_title = input("Title of the analysis: ")
+additional_params = input("Additional settings: ")
+"""
+
 filename = "PLRImola6h"
 analysis_title = "PLR Imola 6h"
-driver_id = "SYN"
+additional_params = ""
+
 data_dir = 'data'
 track_dir = 'tracks'
 car_dir = 'cars'
 img_dir = 'images'
 out_dir = 'analysis'
+settings_dir = 'config'
 
-outlier_margin = 0.06
-comparison_lap_count = 3
-fit_degree = 2
-plot_dpi = 300
+# Read ini file
+config = ConfigParser()
+config.read(settings_dir + '/' + 'settings.ini')
+
+driver_id = config.get('SETTINGS', 'driver_id')
+outlier_margin = float(config.get('SETTINGS', 'outlier_margin'))
+comparison_lap_count = int(config.get('SETTINGS', 'comparison_lap_count'))
+comparison_lap_add_margin = float(config.get('SETTINGS', 'comparison_lap_add_margin'))
+fit_degree = int(config.get('SETTINGS', 'fit_degree'))
+plot_dpi = int(config.get('SETTINGS', 'plot_dpi'))
+
+"""
+Possible additional parameters (overrides defaults:
+Outlier margin: om=...
+Fit degree: fd=...
+Use comma to split, e.g. om=0.01,fd=3
+"""
+om_changed = False
+fd_changed = False
+params = additional_params.rstrip().split(",")
+for par in params:
+    par_spl = par.split("=")
+    if par_spl[0] == "om":
+        outlier_margin = float(par_spl[1])
+        om_changed = True
+    if par_spl[0] == "fd":
+        fit_degree = int(par_spl[1])
+        fd_changed = True
+
+if om_changed:
+    print("Using outlier margin " + str(outlier_margin))
+if fd_changed:
+    print("Using fit degree " + str(fit_degree))
 
 # Read CSV file
 r1, laps = data_reader(data_dir, filename + ".csv")
@@ -42,8 +80,8 @@ accidents_idx = r1.index('Accidents')
 conditions_idx = r1.index('Track Grip')
 rain_idx = r1.index('Rain Intensity')
 tyres_idx = r1.index('Tyres')
-air_temp_idx = r1.index('Â° Air')
-road_temp_idx = r1.index('Â° Road')
+air_temp_idx = r1.index('° Air')
+road_temp_idx = r1.index('° Road')
 position_idx = r1.index('Position')
 gap_idx = r1.index('Gap')
 
@@ -210,18 +248,23 @@ for i in range(len(stints)):
     stint_start_end.append((stints[i][0], stints[i][-1]))
     for j in range(len(stints[i])):
         lap_nums_all.append(stints[i][j][1])
-        if not (j == 0 or (j == len(stints[i]) - 1 and j != race_laps - 1)) \
-                and stints[i][j][0] < sum(comparison_laps)/len(comparison_laps)*(1 + outlier_margin):
+        # add comparison laps to a list
+        new_comparison_laps = []
+        for cl in range(j - comparison_lap_count, j + comparison_lap_count + 1):
+            if 0 <= cl < len(stints[i]):
+                # use lap for comparison if it's close enough to the previous comparison laps
+                if stints[i][cl][0] < sum(comparison_laps) / len(comparison_laps) * (1 + comparison_lap_add_margin):
+                    new_comparison_laps.append(stints[i][cl][0])
+        if stints[i][j][0] < sum(new_comparison_laps)/len(new_comparison_laps)*(1 + outlier_margin) \
+                and j != 0 and (j != len(stints[i]) - 1 or j == race_laps - 1):
             stint.append(stints[i][j][0])
             stint_s1.append(stints_s1[i][j][0])
             stint_s2.append(stints_s2[i][j][0])
             stint_s3.append(stints_s3[i][j][0])
             lap_nums.append(stints[i][j][1])
-            comparison_laps.append(stints[i][j][0])
-            if len(comparison_laps) > comparison_lap_count:
-                comparison_laps = comparison_laps[1:]
         else:
             exc.append(stints[i][j][1])
+        comparison_laps = new_comparison_laps
 
     # Add lap data into numpy arrays
     stint = np.array(stint)
@@ -493,6 +536,9 @@ for i in range(len(stints)):
     t.setStyle(style)
     story.append(t)
     story.append(PageBreak())
-
-doc = SimpleDocTemplate(out_dir + "/" + filename + "_analysis.pdf")
-doc.build(story)
+try:
+    doc = SimpleDocTemplate(out_dir + "/" + filename + "_analysis.pdf")
+    doc.build(story)
+    print("Analysis successful, file " + filename + "_analysis.pdf" + " created")
+except PermissionError:
+    print("Saving file failed. Ensure you do not have the file open.")
