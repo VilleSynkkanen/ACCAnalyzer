@@ -1,7 +1,6 @@
 import csv
 import math
 import locale
-
 from reportlab.lib import utils
 from reportlab.platypus import Image
 
@@ -21,6 +20,8 @@ def to_seconds(time):
 def to_minutes_str(time, round_to=3):
     mins = int(time // 60)
     secs = (time % 60).__round__(round_to)
+    if secs < 10 and mins > 0:
+        secs = "0" + str(secs)
     if mins == 0:
         return str(secs)
     return str(mins) + ":" + str(secs)
@@ -153,4 +154,14 @@ def temps_to_float(temps):
         new_temps.append(float(t.split("°")[0][:-1].replace(decimal_delim, ".")))
     return new_temps
 
+
+def fix_missing_sectors(laps, s1s, s2s, s3s):
+    for i in range(len(laps)):
+        if s1s[i] == math.inf and s2s[i] != math.inf and s3s[i] != math.inf and laps[i] != math.inf:
+            s1s[i] = laps[i] - s2s[i] - s3s[i]
+        elif s2s[i] == math.inf and s1s[i] != math.inf and s3s[i] != math.inf and laps[i] != math.inf:
+            s2s[i] = laps[i] - s1s[i] - s3s[i]
+        elif s3s[i] == math.inf and s1s[i] != math.inf and s2s[i] != math.inf and laps[i] != math.inf:
+            s3s[i] = laps[i] - s1s[i] - s2s[i]
+    return s1s, s2s, s3s
 

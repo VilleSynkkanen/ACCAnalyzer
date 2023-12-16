@@ -14,29 +14,30 @@ Features:
 	-gap behind graph
 	-laps for each driver
 -save analysis to a pdf file (done)
--configurable options via an ini file (delimiter, plot dpi, driver ID, data dir, image dir, output dir)
--command line arguments (data file name, comparison lap count, outlier margin, fit degree)
+-configurable options via an ini file (delimiter, plot dpi, driver ID) (done)
+-command line arguments (data file name, comparison lap count, outlier margin, fit degree) (done)
 
 Notes:
 -outlier margin: Keep between 0.005 and 0.05 (default value = 0.025). More variable conditions may require a larger value
 -fit degree should be 2 most of the time, maybe sometimes 3 or even 4
 
 TODO:
--error handling
-	-dealing with broken data, etc.
-	-should work even with broken sector data
-		-if one sector is missing, calculate times from the other sectors and the full lap
-		-otherwise fail the analysis
-	-fail analysis and show error message when something else goes wrong
 -first build with pyinstaller
-
-FINALLY:
 -instructions for using the application
 -github readme
 
 Details:
--how to deal with special letters (ä, ö, etc.)?
 -Write "PS. Ben Crook sucks" at the end of the instructions
 
 Try:
 -publish release on github (when ready)
+
+Known issues & limitations:
+-First lap gets removed if starting fuel is zero in the data
+-Practice analysis may fail if stints have only an outlap
+
+SGxVCOFinalsR3
+Simgrid X VCO Grand Finals Round 3
+
+RS3hPractice
+Title of the analysis: RacingStronger 3h Solo Endurance Practice

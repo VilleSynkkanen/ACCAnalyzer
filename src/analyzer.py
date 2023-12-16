@@ -1,4 +1,3 @@
-import configparser
 import math
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,7 +9,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak, Table, Spacer, TableStyle
 from reportlab.lib.units import cm
 from utils import data_reader, to_seconds, to_liters, get_image, to_minutes_str, condition_to_int, rain_to_int, \
-    gap_to_float, get_track_map, secs_to_mins, condition_ticks, rain_ticks, temps_to_float
+    gap_to_float, get_track_map, secs_to_mins, condition_ticks, rain_ticks, temps_to_float, fix_missing_sectors
 
 data_dir = 'data'
 track_dir = 'tracks'
@@ -53,10 +52,13 @@ additional_params = input("Additional settings: ")
 Possible additional parameters (overrides defaults:
 Outlier margin: om=...
 Fit degree: fd=...
-Use comma to split, e.g. om=0.01,fd=3
+Skip race analysis: sr
+Laps to analyze: lta=..
+Use comma to split, e.g. om=0.01,fd=3,lta=3;27
 """
 om_changed = False
 fd_changed = False
+skip_race_analysis = False
 params = additional_params.rstrip().split(",")
 for par in params:
     par_spl = par.split("=")
@@ -66,11 +68,16 @@ for par in params:
     if par_spl[0] == "fd":
         fit_degree = int(par_spl[1])
         fd_changed = True
+    if par_spl[0] == "sr":
+        skip_race_analysis = True
+
 
 if om_changed:
     print("Using outlier margin " + str(outlier_margin))
 if fd_changed:
     print("Using fit degree " + str(fit_degree))
+if skip_race_analysis:
+    print("Skipping race analysis")
 
 driver_names = driver.rstrip().lower().split(",")
 
@@ -188,7 +195,6 @@ try:
             air_temp_stint.append(laps[i][air_temp_idx])
             road_temp_stint.append(laps[i][road_temp_idx])
 
-
     stints_all_drivers = []
     curr_driver = laps_all_drivers[0][0]
     curr_stint = []
@@ -272,6 +278,8 @@ try:
                 exc.append(stints[i][j][1])
             comparison_laps = new_comparison_laps
 
+        stint_s1, stint_s2, stint_s3 = fix_missing_sectors(stint, stint_s1, stint_s2, stint_s3)
+
         # Add lap data into numpy arrays
         stint = np.array(stint)
         stint_s1 = np.array(stint_s1)
@@ -313,7 +321,6 @@ try:
             ax2.set_xticklabels(secs_to_mins(ax2.get_xticks()))
         ax2.set_ylabel('number of laps')
         ax2.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-
 
         # Save and clear plot
         plt.savefig(img_dir + "/" + filename + "_stint" + str(stint_idx) + ".png", format="png",
@@ -453,32 +460,32 @@ try:
     story.append(t)
     story.append(Spacer(1, 12))
 
-    story.append(Paragraph("Race Analysis", styleHL2))
-    story.append(Spacer(1, 6))
-    im = get_image(img_dir + "/" + filename + "position.png", width=15*cm)
-    im.hAlign = 'CENTER'
-    story.append(im)
-    story.append(Spacer(1, 6))
-    drivers_table_p = ['Driver']
-    laps_table_p = ['Laps driven']
-    for dr in drivers:
-        drivers_table_p.append(Paragraph(dr))
-        laps_table_p_add = ""
-        for st in stint_start_end_all:
-            if dr == st[0]:
-                laps_table_p_add += str(st[1]) + " - " + str(st[2]) + ", "
-        laps_table_p_add = laps_table_p_add[:-2]
-        laps_table_p.append(Paragraph(laps_table_p_add))
-    data = [drivers_table_p, laps_table_p]
-    t = Table(data)
+    if not skip_race_analysis:
+        story.append(Paragraph("Race Analysis", styleHL2))
+        story.append(Spacer(1, 6))
+        im = get_image(img_dir + "/" + filename + "position.png", width=15*cm)
+        im.hAlign = 'CENTER'
+        story.append(im)
+        story.append(Spacer(1, 6))
+        drivers_table_p = ['Driver']
+        laps_table_p = ['Laps driven']
+        for dr in drivers:
+            drivers_table_p.append(Paragraph(dr))
+            laps_table_p_add = ""
+            for st in stint_start_end_all:
+                if dr == st[0]:
+                    laps_table_p_add += str(st[1]) + " - " + str(st[2]) + ", "
+            laps_table_p_add = laps_table_p_add[:-2]
+            laps_table_p.append(Paragraph(laps_table_p_add))
+        data = [drivers_table_p, laps_table_p]
+        t = Table(data)
 
-    t.setStyle(TableStyle([('GRID', (0, 0), (-1, -1), 0.25, colors.black),
-                           ('VALIGN', (0, 0), (-1, -1), 'TOP')]))
-    story.append(t)
+        t.setStyle(TableStyle([('GRID', (0, 0), (-1, -1), 0.25, colors.black),
+                               ('VALIGN', (0, 0), (-1, -1), 'TOP')]))
+        story.append(t)
     story.append(PageBreak())
 
     for i in range(len(stints)):
-
         story.append(Paragraph("Stint " + str(i + 1) + " Analysis", styleHL2))
         story.append(Spacer(1, 6))
 
@@ -490,7 +497,7 @@ try:
         im.hAlign = 'CENTER'
         story.append(im)
 
-        im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=7.2 * cm)
+        im = get_image(img_dir + "/" + filename + "_stint" + str(i + 1) + "conditions.png", width=6.8 * cm)
         im.hAlign = 'LEFT'
 
         lps = Paragraph(str(stint_start_end[i][0][1]) + " - " + str(stint_start_end[i][1][1]))
