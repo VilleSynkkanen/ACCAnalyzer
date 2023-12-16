@@ -22,7 +22,6 @@ Notes:
 -fit degree should be 2 most of the time, maybe sometimes 3 or even 4
 
 TODO:
--first build with pyinstaller
 -option to analyze only specific laps
 -options for data and analysis folders
 -confirm before closing application
