@@ -23,6 +23,11 @@ Notes:
 
 TODO:
 -first build with pyinstaller
+-option to analyze only specific laps
+-options for data and analysis folders
+-confirm before closing application
+	-give option to analyze again (same or different file)
+-open analysis results when complete
 -instructions for using the application
 -github readme
 
