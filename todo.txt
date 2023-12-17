@@ -22,11 +22,10 @@ Notes:
 -fit degree should be 2 most of the time, maybe sometimes 3 or even 4
 
 TODO:
--instructions for using the application
 -github readme
--better looking logo
 -publish release on github (when ready)
 
 Known issues & limitations:
 -First lap gets removed if starting fuel is zero in the data
 -Analysis may fail if a stint only has an outlap
+-Starting fuel is actually the fuel after lap 1 (actual starting value is not available)

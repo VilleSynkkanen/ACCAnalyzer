@@ -55,7 +55,7 @@ while not close:
     additional_params = input("Additional settings: ")
 
     """
-    Possible additional parameters (overrides defaults:
+    Possible additional parameters (overrides defaults):
     Outlier margin: om=...
     Fit degree: fd=...
     Skip race analysis: sr
@@ -580,11 +580,12 @@ while not close:
             os.chdir(out_dir)
             os.startfile(filename + "_analysis.pdf")
             os.chdir(cwd)
+
         except PermissionError:
             print("Saving file failed. Ensure you do not have the file open.")
 
     except ValueError or NameError or OSError:
         print("Error in analyzing the data. Some data may be invalid or missing.")
 
-# Delete created images
-[f.unlink() for f in Path(out_img_dir).glob("*") if f.is_file()]
+    # Delete created images
+    [f.unlink() for f in Path(out_img_dir).glob("*") if f.is_file()]
