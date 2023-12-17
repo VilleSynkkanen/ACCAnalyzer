@@ -1,5 +1,5 @@
-Features:
--analysis for each stint (done)
+Features (done):
+-analysis for each stint
 	-pace graph, average lap time, exclude laps above a threshold 
 	-histogram of lap times 
 	-starting/ending fuel
@@ -9,39 +9,24 @@ Features:
 	-laps
 	-conditions: track grip, rain, tyre used 
 	-temps: in conditions graph, air and road 
--overall race analysis (done)
+-overall race analysis
 	-position graph (also including other drivers)
 	-gap behind graph
 	-laps for each driver
--save analysis to a pdf file (done)
--configurable options via an ini file (delimiter, plot dpi, driver ID) (done)
--command line arguments (data file name, comparison lap count, outlier margin, fit degree) (done)
+-save analysis to a pdf file
+-configurable options via an ini file (delimiter, plot dpi, driver ID)
+-command line arguments (data file name, comparison lap count, outlier margin, fit degree)
 
 Notes:
 -outlier margin: Keep between 0.005 and 0.05 (default value = 0.025). More variable conditions may require a larger value
 -fit degree should be 2 most of the time, maybe sometimes 3 or even 4
 
 TODO:
--option to analyze only specific laps
--options for data and analysis folders
--confirm before closing application
-	-give option to analyze again (same or different file)
--open analysis results when complete
 -instructions for using the application
 -github readme
-
-Details:
--Write "PS. Ben Crook sucks" at the end of the instructions
-
-Try:
+-better looking logo
 -publish release on github (when ready)
 
 Known issues & limitations:
 -First lap gets removed if starting fuel is zero in the data
--Practice analysis may fail if stints have only an outlap
-
-SGxVCOFinalsR3
-Simgrid X VCO Grand Finals Round 3
-
-RS3hPractice
-Title of the analysis: RacingStronger 3h Solo Endurance Practice
+-Analysis may fail if a stint only has an outlap
