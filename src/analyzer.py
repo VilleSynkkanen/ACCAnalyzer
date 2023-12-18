@@ -87,10 +87,8 @@ while not close:
                 for l in range(int(lps[0]), int(lps[1]) + 1):
                     laps_to_analyze.append(l)
 
-    if om_changed:
-        print("Using outlier margin " + str(outlier_margin))
-    if fd_changed:
-        print("Using fit degree " + str(fit_degree))
+    print("Using outlier margin " + str(outlier_margin))
+    print("Using fit degree " + str(fit_degree))
     if skip_race_analysis:
         print("Skipping race analysis")
     if not analyze_all_laps:
